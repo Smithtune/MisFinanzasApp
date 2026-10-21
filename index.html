@@ -49,14 +49,14 @@
     }
 
     /* Imagen de fondo con baja opacidad */
-    body::before {
+      body::before {
       content: "";
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
-      height: 200%;
-      background-image: url('bg.png');
+      height: 100%;
+      background-image: url('bg.png'); /* Solo el nombre directo */
       background-size: 120%;
       background-position: center;
       background-repeat: no-repeat;
@@ -874,9 +874,9 @@
   </button>
 
     <div class="toast" id="toast" role="status" aria-live="polite">
-      <img src="exito.gif" alt="Éxito">
-      <span id="toast-text">¡Operación guardada con éxito!</span>
-    </div>
+    <img src="exito.gif" alt="Éxito"> <!-- Solo el nombre directo -->
+    <span id="toast-text">¡Operación guardada con éxito!</span>
+  </div>
   <p class="toast" id="toast" role="status" aria-live="polite"></p>
 
   <!-- Modal Nuevo Movimiento -->
