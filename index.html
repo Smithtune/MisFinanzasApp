@@ -1,0 +1,994 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <div class="weather-widget" id="weather-widget" style="font-size: 12px; color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+    <span>Clima actual:</span> <strong id="weather-info" style="color: var(--paper);">Cargando clima...</strong>
+  </div>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#090a0e">
+  <meta name="description" content="Control diario de cobros, ingresos y gastos.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="COBRADIARIO">
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>Llego el COBRADIARIO</title>
+  
+  <style>
+    :root {
+      --ink: #090a0e;
+      --surface: #11131a;
+      --surface-2: #181b24;
+      --surface-3: #20232d;
+      --line: #2b2e38;
+      --paper: #f7f3e9;
+      --muted: #9497a2;
+      --gold: #d9b46a;
+      --gold-pale: #f4d99d;
+      --green: #62c79a;
+      --red: #ef7777;
+      --radius: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--ink);
+      color: var(--paper);
+      font-family: Manrope, system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      position: relative;
+    }
+
+    /* Imagen de fondo con baja opacidad */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 200%;
+      background-image: url('Assets/bg.png');
+      background-size: 120%;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0.15;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    /* Layout Principal Vertical */
+    .app {
+      max-width: 600px;
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: calc(22px + env(safe-area-inset-top)) 20px calc(106px + env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Barra Superior */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      text-decoration: none;
+      color: var(--paper);
+    }
+
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      border: 1px solid rgba(217, 180, 106, .7);
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      color: var(--gold);
+      font-size: 18px;
+      font-weight: 800;
+      box-shadow: inset 0 0 16px rgba(217, 180, 106, .08);
+    }
+
+    .brand-name {
+      font-size: 12px;
+      letter-spacing: 1.6px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .brand-name span {
+      color: var(--gold);
+    }
+
+    .icon-button {
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--paper);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+    }
+
+    /* Textos del Encabezado */
+    .header-text {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .greeting {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    h1 {
+      font-size: 26px;
+      letter-spacing: -1px;
+      line-height: 1.2;
+    }
+
+    h1 em {
+      color: var(--gold);
+      font-style: normal;
+    }
+
+    /* Filtro de Periodos */
+    .periods {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .periods::-webkit-scrollbar {
+      display: none;
+    }
+
+    .period {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 100px;
+      padding: 8px 16px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .period.active {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: #17130c;
+      font-weight: 800;
+    }
+
+    /* Tarjeta de Saldo */
+    .balance-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(217, 180, 106, .48);
+      border-radius: var(--radius);
+      padding: 24px;
+      background: linear-gradient(128deg, #1c1a17 0%, #121319 62%);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, .2);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .balance-card::after {
+      content: "";
+      position: absolute;
+      width: 250px;
+      height: 250px;
+      border: 1px solid rgba(217, 180, 106, .12);
+      border-radius: 50%;
+      right: -120px;
+      top: -138px;
+      box-shadow: 0 0 0 24px rgba(217, 180, 106, .035), 0 0 0 48px rgba(217, 180, 106, .025);
+    }
+
+    .label {
+      position: relative;
+      z-index: 1;
+      color: var(--gold);
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      font-weight: 800;
+    }
+
+    .balance {
+      position: relative;
+      z-index: 1;
+      font-family: "DM Mono", monospace;
+      font-size: 36px;
+      font-weight: 500;
+      letter-spacing: -2px;
+    }
+
+    .balance-foot {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    .balance-foot strong {
+      color: var(--paper);
+      font-weight: 600;
+    }
+
+    .balance-dot {
+      color: var(--gold);
+      font-size: 17px;
+      line-height: 0;
+    }
+
+    /* Métricas */
+    .metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .metric-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .metric-icon {
+      width: 25px;
+      height: 25px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 15px;
+    }
+
+    .in .metric-icon {
+      color: var(--green);
+      background: rgba(98, 199, 154, .12);
+    }
+
+    .out .metric-icon {
+      color: var(--red);
+      background: rgba(239, 119, 119, .12);
+    }
+
+    .metric-value {
+      font-family: "DM Mono", monospace;
+      font-size: 18px;
+      font-weight: 500;
+      letter-spacing: -1px;
+    }
+
+    .in .metric-value {
+      color: var(--green);
+    }
+
+    .out .metric-value {
+      color: var(--red);
+    }
+
+    /* Secciones */
+    .section-heading {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .section-heading h2 {
+      font-size: 16px;
+      letter-spacing: -.5px;
+    }
+
+    .section-heading button {
+      border: 0;
+      background: transparent;
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .spending {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+    }
+
+    .spending-summary {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .spending-summary strong {
+      font-family: "DM Mono", monospace;
+      font-size: 19px;
+      font-weight: 500;
+    }
+
+    .spending-summary span {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .bar {
+      display: flex;
+      gap: 5px;
+      height: 8px;
+      margin-bottom: 16px;
+    }
+
+    .bar span {
+      height: 100%;
+      display: block;
+      border-radius: 99px;
+    }
+
+    .bar .a { width: 38%; background: var(--gold); }
+    .bar .b { width: 23%; background: #a98750; }
+    .bar .c { width: 18%; background: #696c79; }
+    .bar .d { flex: 1; background: #3a3d47; }
+
+    .category-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 11px;
+      font-size: 12px;
+    }
+
+    .category-row .left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #d6d4cd;
+    }
+
+    .category-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--gold);
+    }
+
+    .category-row .amount {
+      color: var(--muted);
+      font-family: "DM Mono", monospace;
+    }
+
+    /* Lista de Movimientos */
+    .transactions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .transaction {
+      display: grid;
+      grid-template-columns: 40px 1fr auto 30px;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 4px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .tx-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      font-size: 17px;
+    }
+
+    .tx-name {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .tx-meta {
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 3px;
+    }
+
+    .tx-value {
+      font-family: "DM Mono", monospace;
+      font-size: 13px;
+    }
+
+    .tx-value.expense { color: var(--red); }
+    .tx-value.income { color: var(--green); }
+
+    .tx-action {
+      width: 30px;
+      height: 30px;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .tx-action:hover {
+      background: var(--surface-3);
+      color: var(--gold);
+    }
+
+    .empty {
+      padding: 25px 0;
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+    }
+
+    /* Botón Flotante y Toast */
+    .fab {
+      position: fixed;
+      left: 50%;
+      bottom: calc(24px + env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 15px 22px;
+      border: 0;
+      border-radius: 99px;
+      color: #17130c;
+      background: var(--gold);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, .45), 0 0 0 5px rgba(217, 180, 106, .1);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .2px;
+      z-index: 10;
+    }
+
+    .fab strong {
+      font-size: 20px;
+      line-height: 12px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 93px;
+      left: 50%;
+      transform: translate(-50%, 18px);
+      max-width: calc(100% - 40px);
+      padding: 11px 15px;
+      border-radius: 12px;
+      color: var(--paper);
+      background: #30343f;
+      border: 1px solid #464a57;
+      font-size: 12px;
+      opacity: 0;
+      transition: .25s;
+      pointer-events: none;
+      z-index: 30;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    /* Diálogos y Modales */
+    dialog {
+      width: min(600px, 100%);
+      border: 0;
+      padding: 0;
+      background: transparent;
+      color: var(--paper);
+      margin: auto;
+    }
+
+    dialog::backdrop {
+      background: rgba(0, 0, 0, .68);
+      backdrop-filter: blur(5px);
+    }
+
+    .sheet {
+      max-height: min(780px, 90vh);
+      overflow-y: auto;
+      background: #14161d;
+      border: 1px solid #31343e;
+      border-radius: 26px 26px 0 0;
+      padding: 22px 20px calc(24px + env(safe-area-inset-bottom));
+      box-shadow: 0 -20px 60px rgba(0, 0, 0, .45);
+    }
+
+    .sheet-handle {
+      width: 36px;
+      height: 4px;
+      border-radius: 99px;
+      background: #4c4f59;
+      margin: 0 auto 19px;
+    }
+
+    .sheet-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .sheet-header h2 {
+      font-size: 19px;
+      letter-spacing: -.6px;
+    }
+
+    .close {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 25px;
+      line-height: 1;
+    }
+
+    .type-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border: 1px solid var(--line);
+      background: #0d0f14;
+      border-radius: 13px;
+      padding: 4px;
+      margin-bottom: 17px;
+    }
+
+    .type-toggle button {
+      border: 0;
+      border-radius: 99px;
+      padding: 10px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .type-toggle button.active {
+      background: var(--surface-3);
+      color: var(--gold);
+    }
+
+    .field {
+      margin-top: 14px;
+    }
+
+    .field label {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      margin: 0 0 7px 2px;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 13px;
+      background: #0c0e13;
+      color: var(--paper);
+      outline: 0;
+      font-size: 14px;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(217, 180, 106, .1);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 11px;
+    }
+
+    .save {
+      width: 100%;
+      border: 0;
+      border-radius: 13px;
+      background: var(--gold);
+      color: #17130c;
+      padding: 15px;
+      font-weight: 800;
+      font-size: 14px;
+      margin-top: 21px;
+    }
+
+    .danger {
+      width: 100%;
+      border: 1px solid rgba(239, 119, 119, .5);
+      border-radius: 13px;
+      background: rgba(239, 119, 119, .08);
+      color: var(--red);
+      padding: 14px;
+      font-weight: 800;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    .movement-preview {
+      background: #0c0e13;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 18px;
+    }
+
+    .movement-preview p:first-child {
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .movement-preview p:last-child {
+      font-family: "DM Mono", monospace;
+      color: var(--gold);
+      font-size: 17px;
+      margin-top: 6px;
+    }
+
+    .action-edit {
+      width: 100%;
+      border: 0;
+      border-radius: 13px;
+      background: var(--gold);
+      color: #17130c;
+      padding: 14px;
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .loading {
+      opacity: .6;
+      pointer-events: none;
+    }
+
+    optgroup {
+      background: #14161d;
+      color: var(--gold);
+      font-weight: 700;
+    }
+
+    option {
+      background: #0c0e13;
+      color: var(--paper);
+    }
+
+
+
+    /* Notificación Toast con soporte para GIF */
+    .toast {
+      position: fixed;
+      bottom: 93px;
+      left: 50%;
+      transform: translate(-50%, 18px);
+      max-width: calc(100% - 40px);
+      padding: 12px 18px;
+      border-radius: 16px;
+      color: var(--paper);
+      background: #1c1e26;
+      border: 1px solid var(--gold);
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      opacity: 0;
+      transition: .25s ease-in-out;
+      pointer-events: none;
+      z-index: 30;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .toast img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    /* Estilos del Reloj Digital */
+    .digital-clock {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .digital-clock:hover {
+      border-color: var(--gold);
+      background: var(--surface-2);
+    }
+
+    #reloj-hora {
+      font-family: "DM Mono", monospace;
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--gold);
+      letter-spacing: -1px;
+    }
+
+    #reloj-fecha {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: capitalize;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="app">
+    <!-- Encabezado Superior -->
+    <header class="topbar">
+      <a class="brand" href="#inicio" aria-label="Inicio">
+        <span class="brand-mark">C</span>
+        <span class="brand-name">LLEGO EL<br><span>COBRADIARIO</span></span>
+      </a>
+      <button id="sync-button" class="icon-button" aria-label="Actualizar datos">↻</button>
+    </header>
+
+    <!-- Saludo / Título -->
+    <div class="header-text">
+      <p class="greeting" id="today-label">Resumen de hoy</p>
+      <h1>Estas ENYARDAD, <em>PAGA!</em></h1>
+    </div>
+
+    <!-- Navegación por Periodos -->
+    <nav class="periods" aria-label="Periodo de consulta">
+      <button class="period active" data-period="mes">Este mes</button>
+      <button class="period" data-period="semana">Semana</button>
+      <button class="period" data-period="hoy">Hoy</button>
+      <button class="period" data-period="todo">Todo</button>
+    </nav>
+
+    <!-- Tarjeta de Saldo Disponible -->
+    <section class="balance-card" aria-label="Balance disponible">
+      <p class="label">DISPONIBLE</p>
+      <p class="balance" id="total-balance">$ 0</p>
+      <div class="balance-foot">
+        <span>Saldo neto del periodo</span>
+        <strong><span class="balance-dot">•</span> COP</strong>
+      </div>
+    </section>
+
+    <!-- Resumen de Métricas -->
+    <section class="metrics" aria-label="Resumen">
+      <article class="metric in">
+        <div class="metric-top">
+          <span>INGRESOS</span>
+          <span class="metric-icon">↙</span>
+        </div>
+        <p class="metric-value" id="total-ingresos">$ 0</p>
+      </article>
+      <article class="metric out">
+        <div class="metric-top">
+          <span>GASTOS</span>
+          <span class="metric-icon">↗</span>
+        </div>
+        <p class="metric-value" id="total-gastos">$ 0</p>
+      </article>
+    </section>
+
+    <!-- Distribución de Gastos -->
+    <section>
+      <div class="section-heading">
+        <h2>Distribución de gastos</h2>
+        <button id="details-button" type="button">Ver detalle</button>
+      </div>
+      <div class="spending">
+        <div class="spending-summary">
+          <strong id="top-category">Sin movimientos</strong>
+          <span id="spending-label">Aún no hay gastos</span>
+        </div>
+        <div class="bar" aria-hidden="true">
+          <span class="a"></span>
+          <span class="b"></span>
+          <span class="c"></span>
+          <span class="d"></span>
+        </div>
+        <div id="categories"></div>
+      </div>
+    </section>
+
+    <!-- Movimientos Recientes -->
+    <section>
+      <div class="section-heading">
+        <h2>Movimientos recientes. Pena deberia darte, Ricky Ricón.</h2>
+        <button id="all-button" type="button">Ver todos</button>
+      </div>
+      <div class="transactions" id="transactions">
+        <p class="empty">Cargando tus movimientos…</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Botón Flotante y Toast -->
+  <button id="open-modal-btn" class="fab" aria-label="Registrar movimiento">
+    <strong>＋</strong> Registrar cobro
+  </button>
+
+    <div class="toast" id="toast" role="status" aria-live="polite">
+      <img src="Assets/exito.gif" alt="Éxito">
+      <span id="toast-text">¡Operación guardada con éxito!</span>
+    </div>
+  <p class="toast" id="toast" role="status" aria-live="polite"></p>
+
+  <!-- Modal Nuevo Movimiento -->
+  <dialog id="transaction-dialog">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h2 id="form-title">Nuevo movimiento</h2>
+        <button class="close" id="close-modal-btn" aria-label="Cerrar">×</button>
+      </div>
+      <form id="transaction-form">
+        <div class="type-toggle">
+          <button class="active" type="button" data-type="Ingreso">Ingreso</button>
+          <button type="button" data-type="Gasto">Gasto</button>
+        </div>
+        <input type="hidden" id="tipo" value="Ingreso">
+
+        <div class="field">
+          <label for="monto">MONTO</label>
+          <input id="monto" type="number" min="1" inputmode="numeric" placeholder="0" required>
+        </div>
+
+        <div class="field">
+          <label for="categoria">CATEGORÍA</label>
+          <select id="categoria" required>
+            <optgroup label="── INGRESOS ──">
+              <option value="Cobro">Cobro a clientes</option>
+              <option value="Salario">Salario / Nómina</option>
+              <option value="Negocios">Negocios / Ventas</option>
+              <option value="Inversiones">Inversiones / Rendimientos</option>
+              <option value="Honorarios">Honorarios / Freelance</option>
+              <option value="Comisiones">Comisiones / Bonos</option>
+              <option value="Arriendos">Arriendos / Rentas</option>
+              <option value="Reembolsos">Reembolsos / Devoluciones</option>
+              <option value="Extras">Extras / Varios</option>
+            </optgroup>
+            <optgroup label="── GASTOS ──">
+              <option value="Alimentación">Alimentación</option>
+              <option value="Transporte">Transporte</option>
+              <option value="Vivienda">Vivienda</option>
+              <option value="Servicios">Servicios</option>
+              <option value="Salud">Salud</option>
+              <option value="Educación">Educación</option>
+              <option value="Entretenimiento">Entretenimiento</option>
+              <option value="Deudas / Préstamos">Deudas / Préstamos</option>
+              <option value="Otros">Otros gastos</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="descripcion">DESCRIPCIÓN</label>
+          <input id="descripcion" maxlength="80" autocomplete="off" placeholder="Ej. Cobro cliente Acme">
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="fecha">FECHA</label>
+            <input id="fecha" type="date" required>
+          </div>
+          <div class="field">
+            <label for="metodo">MÉTODO</label>
+            <select id="metodo">
+              <option>Efectivo</option>
+              <option>Transferencia</option>
+              <option>Nequi / Daviplata</option>
+              <option>Tarjeta</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="save" id="submit-btn" type="submit">Guardar movimiento</button>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- Modal Detalle Movimiento -->
+  <dialog id="movement-dialog">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h2>Movimiento</h2>
+        <button class="close" id="close-movement-btn" aria-label="Cerrar">×</button>
+      </div>
+      <div class="movement-preview" id="movement-preview"></div>
+      <button class="action-edit" id="edit-movement-btn" type="button">Editar movimiento</button>
+      <button class="danger" id="delete-movement-btn" type="button">Eliminar movimiento</button>
+    </div>
+  </dialog>
+
+  <script src="app.js"></script>
+
+
+      <!-- Reloj Digital Interactivo -->
+    <div id="reloj-container" class="digital-clock" onclick="document.getElementById('reloj-dialog').showModal()">
+      <span id="reloj-hora">00:00:00</span>
+      <span id="reloj-fecha">Cargando fecha...</span>
+    </div>
+
+    <!-- Diálogo inferior que se abrirá al hacer clic -->
+    <dialog id="reloj-dialog">
+      <div class="sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <h2>Panel del Reloj</h2>
+          <button class="close" onclick="document.getElementById('reloj-dialog').close()">×</button>
+        </div>
+        <!-- Aquí puedes agregar el contenido que desees después -->
+        <p style="color: var(--muted); font-size: 13px; text-align: center; padding: 20px 0;">
+          Espacio reservado para tus futuras funciones del reloj.
+        </p>
+      </div>
+</dialog>
+</body>
+</html>
