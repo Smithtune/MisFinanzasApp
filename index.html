@@ -49,21 +49,26 @@
     }
 
     /* Imagen de fondo con baja opacidad */
-      body::before {
-      content: "";
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: url('bg.png'); /* Solo el nombre directo */
-      background-size: 120%;
-      background-position: center;
-      background-repeat: no-repeat;
-      opacity: 0.15;
-      pointer-events: none;
-      z-index: 0;
-    }
+      /* Imagen de fondo adaptada perfectamente a celulares */
+        body::before {
+          content: "";
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          width: 100vw;
+          height: 100vh;
+          /* Utiliza las nuevas unidades CSS para móviles si están disponibles */
+          height: 100dvh; 
+          background-image: url('bg.png');
+          background-size: cover;          /* Se escala proporcionalmente para cubrir toda la pantalla */
+          background-position: center center; /* Mantiene el centro de la imagen siempre enfocado */
+          background-repeat: no-repeat;
+          opacity: 0.15;
+          pointer-events: none;
+          z-index: 0;
+        }
 
     button,
     input,
