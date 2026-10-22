@@ -1,9 +1,6 @@
 <!doctype html>
 <html lang="es">
 <head>
-    <div class="weather-widget" id="weather-widget" style="font-size: 12px; color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
-    <span>Clima actual:</span> <strong id="weather-info" style="color: var(--paper);">Cargando clima...</strong>
-  </div>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#090a0e">
@@ -48,27 +45,25 @@
       position: relative;
     }
 
-    /* Imagen de fondo con baja opacidad */
-      /* Imagen de fondo adaptada perfectamente a celulares */
-        body::before {
-          content: "";
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          width: 110vw;
-          height: 110vh;
-          /* Utiliza las nuevas unidades CSS para móviles si están disponibles */
-          height: 100dvh; 
-          background-image: url('bg.png');
-          background-size: cover;          /* Se escala proporcionalmente para cubrir toda la pantalla */
-          background-position: center center; /* Mantiene el centro de la imagen siempre enfocado */
-          background-repeat: no-repeat;
-          opacity: 0.15;
-          pointer-events: none;
-          z-index: 0;
-        }
+    /* Imagen de fondo adaptada a celulares */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 110vw;
+      height: 110vh;
+      height: 100dvh; 
+      background-image: url('bg.png');
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      opacity: 0.15;
+      pointer-events: none;
+      z-index: 0;
+    }
 
     button,
     input,
@@ -80,17 +75,49 @@
       cursor: pointer;
     }
 
+    /* Barra Superior TRM USD */
+    .trm-bar {
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--line);
+      color: var(--paper);
+      font-size: 12px;
+      font-weight: 600;
+      text-align: center;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .trm-bar strong {
+      color: var(--gold);
+      font-family: "DM Mono", monospace;
+    }
+
     /* Layout Principal Vertical */
     .app {
       max-width: 600px;
       min-height: 100vh;
       margin: 0 auto;
-      padding: calc(22px + env(safe-area-inset-top)) 20px calc(106px + env(safe-area-inset-bottom));
+      padding: calc(16px + env(safe-area-inset-top)) 20px calc(106px + env(safe-area-inset-bottom));
       display: flex;
       flex-direction: column;
       gap: 24px;
       position: relative;
       z-index: 1;
+    }
+
+    /* Weather widget */
+    .weather-widget {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     /* Barra Superior */
@@ -481,7 +508,7 @@
       font-size: 13px;
     }
 
-    /* Botón Flotante y Toast */
+    /* Botón Flotante */
     .fab {
       position: fixed;
       left: 50%;
@@ -507,27 +534,39 @@
       line-height: 12px;
     }
 
+    /* Toast */
     .toast {
       position: fixed;
       bottom: 93px;
       left: 50%;
       transform: translate(-50%, 18px);
       max-width: calc(100% - 40px);
-      padding: 11px 15px;
-      border-radius: 12px;
+      padding: 12px 18px;
+      border-radius: 16px;
       color: var(--paper);
-      background: #30343f;
-      border: 1px solid #464a57;
-      font-size: 12px;
+      background: #1c1e26;
+      border: 1px solid var(--gold);
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
       opacity: 0;
-      transition: .25s;
+      transition: .25s ease-in-out;
       pointer-events: none;
       z-index: 30;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
 
     .toast.show {
       opacity: 1;
       transform: translate(-50%, 0);
+    }
+
+    .toast img {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 50%;
     }
 
     /* Diálogos y Modales */
@@ -699,11 +738,6 @@
       font-size: 13px;
     }
 
-    .loading {
-      opacity: .6;
-      pointer-events: none;
-    }
-
     optgroup {
       background: #14161d;
       color: var(--gold);
@@ -713,43 +747,6 @@
     option {
       background: #0c0e13;
       color: var(--paper);
-    }
-
-
-
-    /* Notificación Toast con soporte para GIF */
-    .toast {
-      position: fixed;
-      bottom: 93px;
-      left: 50%;
-      transform: translate(-50%, 18px);
-      max-width: calc(100% - 40px);
-      padding: 12px 18px;
-      border-radius: 16px;
-      color: var(--paper);
-      background: #1c1e26;
-      border: 1px solid var(--gold);
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      opacity: 0;
-      transition: .25s ease-in-out;
-      pointer-events: none;
-      z-index: 30;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translate(-50%, 0);
-    }
-
-    .toast img {
-      width: 100px;
-      height: 100px;
-      object-fit: cover;
-      border-radius: 50%;
     }
 
     /* Estilos del Reloj Digital */
@@ -788,7 +785,17 @@
 </head>
 <body>
 
+  <!-- Barra Superior TRM USD/COP -->
+  <div id="trm-bar" class="trm-bar">
+    <span>💵 TRM USD/COP: <strong>Cargando tasa...</strong></span>
+  </div>
+
   <main class="app">
+    <!-- Clima Actual Widget -->
+    <div class="weather-widget" id="weather-widget">
+      <span>Clima actual:</span> <strong id="weather-info" style="color: var(--paper);">Cargando clima...</strong>
+    </div>
+
     <!-- Encabezado Superior -->
     <header class="topbar">
       <a class="brand" href="#inicio" aria-label="Inicio">
@@ -861,6 +868,12 @@
       </div>
     </section>
 
+    <!-- Reloj Digital Interactivo -->
+    <div id="reloj-container" class="digital-clock" onclick="document.getElementById('reloj-dialog').showModal()">
+      <span id="reloj-hora">00:00:00</span>
+      <span id="reloj-fecha">Cargando fecha...</span>
+    </div>
+
     <!-- Movimientos Recientes -->
     <section>
       <div class="section-heading">
@@ -873,16 +886,16 @@
     </section>
   </main>
 
-  <!-- Botón Flotante y Toast -->
+  <!-- Botón Flotante -->
   <button id="open-modal-btn" class="fab" aria-label="Registrar movimiento">
     <strong>＋</strong> Registrar cobro
   </button>
 
-    <div class="toast" id="toast" role="status" aria-live="polite">
-    <img src="exito.gif" alt="Éxito"> <!-- Solo el nombre directo -->
+  <!-- Notificación Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <img src="exito.gif" alt="Éxito">
     <span id="toast-text">¡Operación guardada con éxito!</span>
   </div>
-  <p class="toast" id="toast" role="status" aria-live="polite"></p>
 
   <!-- Modal Nuevo Movimiento -->
   <dialog id="transaction-dialog">
@@ -972,28 +985,40 @@
     </div>
   </dialog>
 
+  <!-- Panel del Reloj -->
+  <dialog id="reloj-dialog">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <h2>Panel del Reloj</h2>
+        <button class="close" onclick="document.getElementById('reloj-dialog').close()">×</button>
+      </div>
+      <p style="color: var(--muted); font-size: 13px; text-align: center; padding: 20px 0;">
+        Espacio reservado para tus futuras funciones del reloj.
+      </p>
+    </div>
+  </dialog>
+
   <script src="app.js"></script>
 
+  <!-- Script para consultar la TRM USD/COP -->
+  <script>
+    async function obtenerTRM() {
+      const trmBarEl = document.getElementById('trm-bar');
+      try {
+        const res = await fetch('https://open.er-api.com/v6/latest/USD');
+        const data = await res.json();
+        if (data && data.rates && data.rates.COP) {
+          const trm = data.rates.COP;
+          const fmt = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 2 });
+          trmBarEl.innerHTML = `<span>💵 TRM USD/COP: <strong>${fmt.format(trm)}</strong></span>`;
+        }
+      } catch (e) {
+        trmBarEl.innerHTML = `<span>💵 TRM USD/COP: <strong>No disponible</strong></span>`;
+      }
+    }
 
-      <!-- Reloj Digital Interactivo -->
-    <div id="reloj-container" class="digital-clock" onclick="document.getElementById('reloj-dialog').showModal()">
-      <span id="reloj-hora">00:00:00</span>
-      <span id="reloj-fecha">Cargando fecha...</span>
-    </div>
-
-    <!-- Diálogo inferior que se abrirá al hacer clic -->
-    <dialog id="reloj-dialog">
-      <div class="sheet">
-        <div class="sheet-handle"></div>
-        <div class="sheet-header">
-          <h2>Panel del Reloj</h2>
-          <button class="close" onclick="document.getElementById('reloj-dialog').close()">×</button>
-        </div>
-        <!-- Aquí puedes agregar el contenido que desees después -->
-        <p style="color: var(--muted); font-size: 13px; text-align: center; padding: 20px 0;">
-          Espacio reservado para tus futuras funciones del reloj.
-        </p>
-      </div>
-</dialog>
+    document.addEventListener('DOMContentLoaded', obtenerTRM);
+  </script>
 </body>
 </html>
